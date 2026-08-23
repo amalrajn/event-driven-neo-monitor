@@ -1,11 +1,7 @@
 import type { Asteroid, CloseApproach } from "../types/asteroid.js";
 import { LUNAR_DISTANCE_KM } from "../types/asteroid.js";
 import { getJson, ApiError } from "./http.js";
-
-const KEY = process.env.NASA_KEY;
-if(!KEY){
-    throw new Error("set NASA_KEY in .env file");
-}
+import { NASA_KEY } from "../config.js";
 
 const API_BASE = "https://api.nasa.gov/neo/rest/v1";
 
@@ -53,7 +49,7 @@ export async function fetchNeoApi(start_date: string, end_date: string): Promise
         );
     }
 
-    const url = `${API_BASE}/feed?start_date=${start_date}&end_date=${end_date}&api_key=${KEY}`;
+    const url = `${API_BASE}/feed?start_date=${start_date}&end_date=${end_date}&api_key=${NASA_KEY}`;
     return getJson<NeoFeedResponse>(url);
 }
 
