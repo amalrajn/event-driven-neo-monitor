@@ -51,7 +51,7 @@ export async function handler(job: Job) {
     }
   } catch (err) {
     // A non-retryable error means our request was wrong; retrying only delays it.
-    if (err instanceof ApiError && !err.retryable) await UnrecoverableError;
+    if (err instanceof ApiError && !err.retryable) throw new UnrecoverableError(err.message);
     throw err;
   }
 }
