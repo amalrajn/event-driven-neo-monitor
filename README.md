@@ -1,6 +1,6 @@
 Asteroid monitoring dashboard that uses NASA APIs to display current data and the threat level of near-Earth objects.
 
-Made with TypeScript, React.JS, Node.JS, BullMQ, Redis, Apache Kafka, PostgreSQL, and Docker
+Made with TypeScript, React.JS, Express.JS, BullMQ, Redis, Apache Kafka, PostgreSQL, and Docker
 
 ## Instructions:
 
