@@ -3,12 +3,15 @@ import { REDIS_HOST, REDIS_PORT } from "./config.js";
 import {
   handler, QUEUE_NAME, JOB_FEED, JOB_SENTRY_SUMMARY, JOB_SENTRY_REMOVED,
 } from "./jobs/pollNasa.js";
+import { kafka, ensureTopics, disconnect} from "./services/kafka.js";
 
 const connection = { host: REDIS_HOST, port: REDIS_PORT };
 
 const retry = { attempts: 3, backoff: { type: "exponential", delay: 30_000 } } as const;
 
 const queue = new Queue(QUEUE_NAME, { connection });
+
+await ensureTopics(kafka,['neows.asteroids','neows.close-approaches','sentry.risks','sentry.removals'],2);
 
 // Staggered so the three polls don't stampede on the same tick.
 await queue.upsertJobScheduler(JOB_FEED, { pattern: "0 */6 * * *" }, { name: JOB_FEED, opts: retry });
@@ -22,7 +25,9 @@ worker.on("failed", (job, err) => console.error(` ${job?.name}`, err.message));
 
 async function shutdown(signal: string) {
   console.log(`${signal} received, draining…`);
+  // stop jobs first, then wait for those to finish and then dc
   await worker.close();
+  await disconnect();
   await queue.close();
   process.exit(0);
 }
