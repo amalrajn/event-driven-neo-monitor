@@ -1,5 +1,13 @@
-import { Kafka, type KafkaConfig, type Producer, type Consumer} from "kafkajs";
+import { Kafka, type KafkaConfig, type Consumer, type EachMessagePayload, type Producer} from "kafkajs";
 import { KAFKA_BROKER } from "../config/config.js";
+import type { Asteroid, CloseApproach, SentryRisk } from "../types/asteroid.js";
+import {
+    insertSentryRiskHistory,
+    upsertAsteroid,
+    upsertCloseApproach,
+    upsertSentryRemoval,
+    upsertSentryRisk,
+} from "../repository/repo.js";
 
 //neows topics: neows.asteroids, neows.close-approaches (key: spkId)
 //sentry topics: sentry.risks, sentry.removals (key: des)
@@ -11,16 +19,16 @@ const config: KafkaConfig = {
     brokers : [KAFKA_BROKER]
 }
 
+export const kafka = new Kafka(config);
 /* -------------------------------------------------------------------------- */
 /*  Producer Code                                                             */
 /* -------------------------------------------------------------------------- */
-export const kafka = new Kafka(config);
 
 let cachedProducer: Producer | null = null;
 
 // Connect once per process and reuse. idempotent stops broker-side retries from
 // duplicating records, which matters because our poll windows overlap on purpose.
-export async function getProducer(): Promise<Producer>{
+async function getProducer(): Promise<Producer>{
     if (!cachedProducer){
         cachedProducer = kafka.producer({idempotent: true});
         await cachedProducer.connect();
@@ -72,5 +80,58 @@ export async function ensureTopics(kafka: Kafka, topics: string[], partitions: n
 /* -------------------------------------------------------------------------- */
 /*  Consumer Code                                                             */
 /* -------------------------------------------------------------------------- */
+async function getConsumer(kafka: Kafka): Promise<Consumer>{
+    const consumer = kafka.consumer({groupId: 'postgres-write-group'});
+    await consumer.connect();
+    await consumer.subscribe({
+        topics: ['neows.asteroids', 'neows.close-approaches', 'sentry.risks', 'sentry.removals'],
+        fromBeginning: false,
+    });
+    return consumer;
+}
 
+type MessageEnvelope<T> = { observedAt: string; payload: T };
+
+function parseMessage<T>(message: EachMessagePayload["message"]): MessageEnvelope<T> {
+    if (!message.value) throw new Error("Kafka message has no value");
+    const envelope = JSON.parse(message.value.toString()) as MessageEnvelope<T>;
+    if (typeof envelope.observedAt !== "string" || envelope.payload == null) {
+        throw new Error("Kafka message has an invalid envelope");
+    }
+    return envelope;
+}
+
+export async function runConsumer(kafka: Kafka): Promise<Consumer> {
+    const consumer = await getConsumer(kafka);
+    await consumer.run({
+        eachMessage: async ({topic, message}) => {
+            try {
+                const { observedAt, payload } = parseMessage(message);
+
+                if (topic === 'neows.asteroids'){
+                    await upsertAsteroid(payload as Asteroid, observedAt);
+                }
+                else if (topic === 'neows.close-approaches'){
+                    await upsertCloseApproach(payload as CloseApproach, observedAt);
+                }
+                else if (topic === 'sentry.risks'){
+                    const risk = payload as Omit<SentryRisk, "spkId">;
+                    await upsertSentryRisk(risk, observedAt);
+                    await insertSentryRiskHistory(risk, observedAt);
+                }
+                else if (topic === 'sentry.removals'){
+                    await upsertSentryRemoval(payload as { designation: string; removedAt: Date | null }, observedAt);
+                }
+                else{
+                    throw new Error(`Unknown Kafka topic: ${topic}`);
+                }
+            }
+            catch (err) {
+                console.error('Failed to persist Kafka message', err);
+                throw err;
+            }
+        }
+    });
+    return consumer;
+}
 
