@@ -5,14 +5,14 @@ Made with TypeScript, React.JS, Express.JS, BullMQ, Redis, Apache Kafka, Postgre
 ## Instructions:
 
 ```bash
-git clone https://github.com/amalrajn/asteroid-tracker
+git clone https://github.com/amalrajn/event-driven-neo-monitor
 cd asteroid-tracker
 docker compose up -d
-cd backend
-npm install
-cd worker
-npm install
-cd frontend
-npm install
-npm run dev
+# then per-service installs
+cd backend && npm install
+cd ../worker && npm install
+cd ../frontend && npm install
+# run frontend in dev
+cd frontend && npm run dev
+# backend and worker have tsx dev scripts: `npm run dev` in each
 ```
