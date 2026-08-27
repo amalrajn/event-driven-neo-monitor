@@ -1,7 +1,7 @@
 import type { Asteroid, CloseApproach } from "../types/asteroid.js";
 import { LUNAR_DISTANCE_KM } from "../types/asteroid.js";
 import { getJson, ApiError } from "./http.js";
-import { NASA_KEY } from "../config.js";
+import { NASA_KEY } from "../config/config.js";
 
 const API_BASE = "https://api.nasa.gov/neo/rest/v1";
 

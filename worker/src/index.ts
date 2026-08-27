@@ -1,5 +1,5 @@
 import { Queue, Worker } from "bullmq";
-import { REDIS_HOST, REDIS_PORT } from "./config.js";
+import { REDIS_HOST, REDIS_PORT } from "./config/config.js";
 import {
   handler, QUEUE_NAME, JOB_FEED, JOB_SENTRY_SUMMARY, JOB_SENTRY_REMOVED,
 } from "./jobs/pollNasa.js";

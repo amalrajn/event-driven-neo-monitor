@@ -1,5 +1,5 @@
-import { Kafka, type KafkaConfig, type Producer} from "kafkajs";
-import { KAFKA_BROKER } from "../config.js";
+import { Kafka, type KafkaConfig, type Producer, type Consumer} from "kafkajs";
+import { KAFKA_BROKER } from "../config/config.js";
 
 //neows topics: neows.asteroids, neows.close-approaches (key: spkId)
 //sentry topics: sentry.risks, sentry.removals (key: des)
@@ -11,6 +11,9 @@ const config: KafkaConfig = {
     brokers : [KAFKA_BROKER]
 }
 
+/* -------------------------------------------------------------------------- */
+/*  Producer Code                                                             */
+/* -------------------------------------------------------------------------- */
 export const kafka = new Kafka(config);
 
 let cachedProducer: Producer | null = null;
@@ -65,3 +68,9 @@ export async function ensureTopics(kafka: Kafka, topics: string[], partitions: n
         await admin.disconnect();
     }
 }
+
+/* -------------------------------------------------------------------------- */
+/*  Consumer Code                                                             */
+/* -------------------------------------------------------------------------- */
+
+

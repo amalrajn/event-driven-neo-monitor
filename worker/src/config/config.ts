@@ -18,8 +18,7 @@ function optional(name: string, fallback: string): string {
 }
 
 export const NASA_KEY = required("NASA_KEY");
-
 export const REDIS_HOST = optional("REDIS_HOST", "127.0.0.1");
 export const REDIS_PORT = Number(optional("REDIS_PORT", "6379"));
-
+export const DATABASE_URL = optional("DATABASE_URL","postgres://postgres:postgres@localhost:5432/asteroid_tracker");
 export const KAFKA_BROKER = optional("KAFKA_BROKER", "localhost:9092");
