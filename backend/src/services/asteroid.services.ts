@@ -28,4 +28,20 @@ export class AsteroidService {
             throw error;
         }
     }
+
+    public async getAsteroidHistoryByDesignationService(designation: string): Promise<Asteroid[]>{
+        if (!designation || designation.trim().length === 0) {
+            throw new Error("Designation is required");
+        }
+        try {
+            const asteroid = await this.ast_repo.getAsteroidHistorybyDesignationRepo(designation);
+            if (!asteroid) {
+                throw new Error(`Asteroid history with designation '${designation}' not found`);
+            }
+            return asteroid;
+        } catch (error) {
+            console.error(`Failed to fetch asteroid history by designation '${designation}':`, error);
+            throw error;
+        }
+    }
 }
