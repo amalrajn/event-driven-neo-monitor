@@ -19,6 +19,7 @@ await queue.upsertJobScheduler(JOB_FEED, { pattern: "0 */6 * * *" }, { name: JOB
 await queue.upsertJobScheduler(JOB_SENTRY_SUMMARY, { pattern: "20 */6 * * *" }, { name: JOB_SENTRY_SUMMARY, opts: retry });
 await queue.upsertJobScheduler(JOB_SENTRY_REMOVED, { pattern: "40 3 * * *" }, { name: JOB_SENTRY_REMOVED, opts: retry });
 
+//immediately start the jobs instead of waiting 6 hours for the upserted jobs
 const startupSuffix = Date.now().toString();
 await queue.add(JOB_FEED, {}, { ...retry, jobId: `${JOB_FEED}-${startupSuffix}` });
 await queue.add(JOB_SENTRY_SUMMARY, {}, { ...retry, jobId: `${JOB_SENTRY_SUMMARY}-${startupSuffix}` });
