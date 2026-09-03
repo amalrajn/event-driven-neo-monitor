@@ -2,9 +2,9 @@ import { config } from "dotenv";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-// Load .env from repo root
+// Load .env from the repository root.
 const here = dirname(fileURLToPath(import.meta.url));
-config({ path: resolve(here, "../../.env"), quiet: true });
+config({ path: resolve(here, "../../../.env"), quiet: true });
 
 function required(name: string): string {
   const value = process.env[name]?.trim();

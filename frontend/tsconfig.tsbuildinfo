@@ -1,0 +1,1 @@
+{"root":["./vite.config.ts","./src/vite-env.d.ts","./src/api/asteroid.ts","./App.tsx","./main.tsx","./src/pages/main.tsx"],"version":"5.9.3"}

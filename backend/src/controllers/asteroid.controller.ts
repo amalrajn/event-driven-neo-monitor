@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { AsteroidService } from "../services/asteroid.services.js";
 import { DesignationParams } from "../interfaces/interfaces.js";
-import { resolveSoa, resolveTlsa } from "node:dns";
 
 export class AsteroidController {
     private ast_service = new AsteroidService();
@@ -41,8 +40,8 @@ export class AsteroidController {
         res: Response
     ): Promise<void> {
         try {
-            const {designation} = req.params;
-            const ast_data = this.ast_service.getAsteroidHistoryByDesignationService(designation);
+            const { designation } = req.params;
+            const ast_data = await this.ast_service.getAsteroidHistoryByDesignationService(designation);
             res.json(ast_data);
         }
         catch (error: unknown){
@@ -53,8 +52,8 @@ export class AsteroidController {
             else if(message.includes("Designation is required")){
                 res.status(400).json({message});
             }
-            else if (message.includes("Failed to fetch")){
-                res.status(500).json({message});
+            else {
+                res.status(500).json({message: "Failed to fetch"});
             }
         }
     }
